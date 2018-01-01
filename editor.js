@@ -5,62 +5,57 @@ var container;			// <div> HTML tag
 var width = window.innerWidth;
 var height = window.innerHeight;
 
-// Player physics variables
-var playerX;	// Player position starts in the middle of the screen
+// Player physics variables:
+var playerX; // Player position
 var playerY;
 var playerLastX; // Previous position of player
 var playerLastY;
 var playerXSpeed = 0;	
 var playerYSpeed = 0;
-var jumpTimer = 0;
-var jumpLimit = 8000;
 var grounded = false;
-var adjustX;	// Used for collision detection
+// Used for collision detection:
+var playerWidth;
+var playerHeight;
+var adjustX;
 var adjustY;
-var offsetXTemp;
-var offsetYTemp;
+var offsetX; // Half of player width
+var offsetY;
 
 // Adjustable values:
 var physicsTickRate = 300;	// Number of times physics is calculated per second (max 1000)
 var graphicsTickRate = 200;	// Number of times canvas is refreshed per second (max 1000)
 var inputTickRate = 100;	// Number of times per second the keyboard inputs are processed (max 1000)
-var gravity = 100;			// Downward acceleration (blocks/second^2)(?)
-var maxFallSpeed = 0.07;
-var moveSpeed = 0.03;		// Horizontal movement speed of player
+
+var gravity = 100;			// Downward acceleration
+var maxFallSpeed = 0.07;	// Terminal velocity
+var moveSpeed = 0.025;		// Horizontal movement speed of player
 
 var jumpSpeed = 15;
-var jumpHeight = 3; // Number of blocks to jump
-var initialY;
 var jumping = false;
-var canJump = false;
 var jumpTimer = 0;
 var maxJumpTime = 200;
 
 var friction = 0.05;
 
-var devMode = true;
-var solitaireMode = false;
+var devMode = true; // Displays stats and shows grid
+var solitaireMode = false; // Skips resetting the canvas
 
 // Level data
 var gridWidth = 32;
 var gridHeight = 16;
 var blockSize;
 var grid;
-var numBlockTypes = 4;
+var numBlockTypes = 5;
 var blocks = {
 	air: 0,
 	stone: 1,
 	rainbow: 2,
-	breakable: 3
+	breakable: 3,
+	jumpPower: 4
 }
-var playerWidth;
-var playerHeight;
-var offsetX;	// Half of player width - for collision detection
-var offsetY;
 
 // Sprites
 var character;
-
 
 // Input variables
 var heldKeys = {};		// heldKey[x] is true when the key with that keyCode is being held down
@@ -233,10 +228,6 @@ function physics() {
 		jumpTimer -= (1000/physicsTickRate);
 		jumping = true;
 		playerYSpeed = -jumpSpeed / physicsTickRate;
-		if (grounded)
-		{
-			initialY = playerY;
-		}
 	}
 	else
 	{
@@ -283,55 +274,55 @@ function physics() {
 		
 		// Bottom right corner
 		if (corner == 0) {
-			offsetXTemp = offsetX;
-			offsetYTemp = offsetY;
+			offsetX = playerWidth/(blockSize*2);
+			offsetY = playerHeight/(blockSize*2);
 			adjustX = 0;
 			adjustY = 0;
 		}
 		// Top right corner
 		else if (corner == 1) {
-			offsetXTemp = offsetX;
-			offsetYTemp = -offsetY;
+			offsetX = playerWidth/(blockSize*2);
+			offsetY = -playerHeight/(blockSize*2);
 			adjustX = 0;
 			adjustY = 1;
 		} 
 		// Top left corner
 		else if (corner == 2) {
-			offsetXTemp = -offsetX;
-			offsetYTemp = -offsetY;
+			offsetX = -playerWidth/(blockSize*2);
+			offsetY = -playerHeight/(blockSize*2);
 			adjustX = 1;
 			adjustY = 1;
 		}
 		// Bottom left corner
 		else if (corner == 3) {
-			offsetXTemp = -offsetX;
-			offsetYTemp = offsetY;
+			offsetX = -playerWidth/(blockSize*2);
+			offsetY = playerHeight/(blockSize*2);
 			adjustX = 1;
 			adjustY = 0;
 		}
 		
 		// Determine what block this corner is in
-		pBlockX = Math.floor(playerX+offsetXTemp);
-		pBlockY = Math.floor(playerY+offsetYTemp);
+		pBlockX = Math.floor(playerX+offsetX);
+		pBlockY = Math.floor(playerY+offsetY);
 		
 		// Make sure it's inbounds
 		if (pBlockX >= 0 && pBlockX < gridWidth && pBlockY >= 0 && pBlockY < gridHeight) {
 			
 			// Check if it is a solid block
-			if (grid[pBlockX][pBlockY] != blocks.air) {
+			if (isSolid(grid[pBlockX][pBlockY])) {
 				
 				// If we are in a solid block, it's a collision
 				// Check if we are colliding with the side or top/bottom of the block
-				if (Math.floor(playerLastY+offsetYTemp) == pBlockY && playerLastY+offsetYTemp != pBlockY)
+				if (Math.floor(playerLastY+offsetY) == pBlockY && playerLastY+offsetY != pBlockY)
 				{
 					// Colliding with the side
-					playerX = pBlockX + adjustX - offsetXTemp;
+					playerX = pBlockX + adjustX - offsetX;
 					playerXSpeed = 0;
 				} 
-				else if (Math.floor(playerLastX+offsetXTemp) == pBlockX && playerLastX+offsetXTemp != pBlockX)
+				else if (Math.floor(playerLastX+offsetX) == pBlockX && playerLastX+offsetX!= pBlockX)
 				{
 					// Colliding with the top or bottom
-					playerY = pBlockY + adjustY - offsetYTemp;
+					playerY = pBlockY + adjustY - offsetY;
 					playerYSpeed = 0;
 					
 					if (corner == 0 || corner == 3)
@@ -424,18 +415,22 @@ function draw() {
 				// Change the color depending on the block type
 				if (block == blocks.stone)
 				{
-					c.fillStyle = "rgba(80, 80, 80, 1)";
+					c.fillStyle = "rgba(80, 80, 80, 1)"; // Dark gray
 				}
 				else if (block == blocks.rainbow)
 				{
 					red = Math.random() * 255;
 					green = Math.random() * 255;
 					blue = Math.random() * 255;
-					c.fillStyle = "rgba(" + red + ", " + green + ", " + blue + ", 1)";
+					c.fillStyle = "rgba(" + red + ", " + green + ", " + blue + ", 1)"; // Random color each frame
 				}
 				else if (block == blocks.breakable)
 				{
-					c.fillStyle = "rgba(175, 175, 210, 1)";
+					c.fillStyle = "rgba(175, 175, 210, 1)"; // Pale blue
+				}
+				else if (block == blocks.jumpPower)
+				{
+					c.fillStyle = "rgba(34, 139, 34, 1)"; // Green
 				}
 				// Draw the block
 				c.fillRect(x * blockSize, y * blockSize, blockSize+1, blockSize+1);
@@ -504,11 +499,17 @@ function draw() {
 	}
 }
 
-function countFrames() {
+function countFrames()
+{
 	now = Date.now();
 	fps = Math.floor(frameCount/((now-then)/1000));
 	then = now; // whoa, dude
 	frameCount = 0;
+}
+
+function isSolid(block)
+{
+	return !(block == blocks.air || block == blocks.jumpPower);
 }
 
 
