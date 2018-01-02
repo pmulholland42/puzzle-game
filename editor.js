@@ -54,6 +54,14 @@ var blocks = {
 	jumpPower: 4
 }
 
+// Power-ups
+var powers = {
+	none: 0,
+	jump: 1,
+	smash: 2
+}
+var power; // Currently held power-up
+
 // Sprites
 var character;
 
@@ -105,6 +113,7 @@ function init()
 	
 	playerX = 5;
 	playerY = 5;
+	power = powers.none;
 	
 	// Render the canvas
 	draw();
@@ -302,15 +311,15 @@ function physics() {
 		}
 		
 		// Determine what block this corner is in
-		pBlockX = Math.floor(playerX+offsetX);
-		pBlockY = Math.floor(playerY+offsetY);
+		pBlockX = Math.floor(playerX + offsetX);
+		pBlockY = Math.floor(playerY + offsetY);
 		
 		// Make sure it's inbounds
-		if (pBlockX >= 0 && pBlockX < gridWidth && pBlockY >= 0 && pBlockY < gridHeight) {
-			
+		if (pBlockX >= 0 && pBlockX < gridWidth && pBlockY >= 0 && pBlockY < gridHeight)
+		{	
 			// Check if it is a solid block
-			if (isSolid(grid[pBlockX][pBlockY])) {
-				
+			if (isSolid(grid[pBlockX][pBlockY]))
+			{
 				// If we are in a solid block, it's a collision
 				// Check if we are colliding with the side or top/bottom of the block
 				if (Math.floor(playerLastY+offsetY) == pBlockY && playerLastY+offsetY != pBlockY)
@@ -332,42 +341,45 @@ function physics() {
 						jumpTimer = maxJumpTime;
 					}
 				}
-				else
-				{
-					// This probably shouldn't happen but it could
-					console.log("EVIL DIAGONAL EDGE CASE ALERT!!!!!!!!!!!!!!!");
-				}
+			}
+			// Check if it is a power up
+			if (isPowerUp(grid[pBlockX][pBlockY]))
+			{
+				power = blockToPower(grid[pBlockX][pBlockY]);
+				grid[pBlockX][pBlockY] = blocks.air;
+			}
+		}
+		else
+		{
+			// Ceiling collision detection
+			if (playerY + offsetY < 0)
+			{
+				playerY = -offsetY;
+				playerYSpeed = 0;
+			}
+			// Ground collision detection
+			else if (playerY + offsetY > gridHeight)
+			{
+				playerY = gridHeight - offsetY;
+				playerYSpeed = 0;
+				grounded = true;
+				jumpTimer = maxJumpTime;
+			}	
+			// Left wall collision detection
+			if (playerX + offsetX < 0)
+			{
+				playerX = -offsetX;
+				playerXSpeed = 0;
+			}
+			// Right wall collision detection
+			else if (playerX + offsetX > gridWidth)
+			{
+				playerX = gridWidth - offsetX;
+				playerXSpeed = 0; 
 			}
 		}
 	}
-	
-	// Ceiling collision detection
-	if (playerY - offsetY < 0)
-	{
-		playerY = offsetY;
-		playerYSpeed = 0;
-	}
-	// Ground collision detection
-	else if (playerY + offsetY > gridHeight)
-	{
-		playerY = gridHeight - offsetY;
-		playerYSpeed = 0;
-		grounded = true;
-		jumpTimer = maxJumpTime;
-	}	
-	// Left wall collision detection
-	if (playerX - offsetX < 0)
-	{
-		playerX = offsetX;
-		playerXSpeed = 0;
-	}
-	// Right wall collision detection
-	else if (playerX + offsetX > gridWidth)
-	{
-		playerX = gridWidth - offsetX;
-		playerXSpeed = 0; 
-	}
-	
+		
 	// Friction (this may not be necessary)
 	if (!(heldKeys[65] || heldKeys[68]) && grounded)
 	{
@@ -495,7 +507,11 @@ function draw() {
 		if (jumping) c.fillStyle = "green";
 		else c.fillStyle = "red";
 		c.fillText('Jumping: '+ jumping, 10, 150);
-		c.fillText('Jump timer: '+ jumpTimer, 10, 170);
+		
+		// Power-up
+		if (power != powers.none) c.fillStyle = "green";
+		else c.fillStyle = "red";
+		c.fillText('Power: '+ power, 10, 170);
 	}
 }
 
@@ -507,9 +523,18 @@ function countFrames()
 	frameCount = 0;
 }
 
+// TODO: replace these helper functions with a class based system for block types
 function isSolid(block)
 {
 	return !(block == blocks.air || block == blocks.jumpPower);
+}
+function isPowerUp(block)
+{
+	return block == blocks.jumpPower;
+}
+function blockToPower(block)
+{
+	return powers.jump;
 }
 
 
