@@ -28,14 +28,12 @@ var inputTickRate = 100;	// Number of times per second the keyboard inputs are p
 
 var gravity = 100;			// Downward acceleration
 var maxFallSpeed = 0.07;	// Terminal velocity
-var moveSpeed = 0.025;		// Horizontal movement speed of player
+var moveSpeed = 0.028;		// Horizontal movement speed of player
 
 var jumpSpeed = 15;
 var jumping = false;
 var jumpTimer = 0;
 var maxJumpTime = 200;
-
-var friction = 0.05;
 
 var devMode = true; // Displays stats and shows grid
 var solitaireMode = false; // Skips resetting the canvas
@@ -378,14 +376,6 @@ function physics() {
 				playerXSpeed = 0; 
 			}
 		}
-	}
-		
-	// Friction (this may not be necessary)
-	if (!(heldKeys[65] || heldKeys[68]) && grounded)
-	{
-		if (Math.abs(playerXSpeed) < 0.01) playerXSpeed = 0;
-		else if (playerXSpeed > 0) playerXSpeed -= friction;
-		else playerXSpeed += friction;
 	}
 }
 
