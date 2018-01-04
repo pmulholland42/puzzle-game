@@ -338,6 +338,12 @@ function physics() {
 						grounded = true;
 						jumpTimer = maxJumpTime;
 					}
+					else
+					{
+						// If one of the top corners is colliding then the player is hitting their head on a block
+						jumping = false;
+						jumpTimer = 0;
+					}
 				}
 			}
 			// Check if it is a power up
