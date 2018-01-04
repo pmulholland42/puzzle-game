@@ -36,7 +36,7 @@ var jumpTimer = 0;
 var maxJumpTime = 200;
 
 var devMode = true; // Displays stats and shows grid
-var solitaireMode = false; // Skips resetting the canvas
+var traceMode = false; // Skips resetting the canvas
 
 // Level data
 var gridWidth = 32;
@@ -69,10 +69,8 @@ var controls = {
 	left: 65, // A
 	right: 68, // D
 	jump: 87, // W
-	devOn: 75, // K
-	devOff: 76, // L
-	solOn: 74, // J
-	solOff: 72 // H
+	devMode: 76, // L
+	traceMode: 75 // K
 }
 
 // FPS counter
@@ -126,7 +124,6 @@ function init()
 	draw();
 	setInterval(draw, 1000/graphicsTickRate);
 	setInterval(physics, 1000/physicsTickRate);
-	setInterval(parseKeyboard, 1000/inputTickRate);
 	setInterval(countFrames, 1000);
 }
 
@@ -185,6 +182,14 @@ document.onkeydown = function(event)
 {
 	// Set this key as being held
 	heldKeys[event.keyCode] = true;
+	
+	switch (event.keyCode)
+	{
+		case controls.devMode: devMode = !devMode;
+		break;
+		case controls.traceMode: traceMode = !traceMode;
+		break;
+	}
 }
 // Called when a key is released
 document.onkeyup = function(event)
@@ -192,36 +197,6 @@ document.onkeyup = function(event)
 	// Unset this key
 	heldKeys[event.keyCode] = false;
 }
-
-
-// Interpret player input
-function parseKeyboard()
-{
-	// Check the heldKeys array to see what the current input is
-	if (heldKeys[controls.left]) { // A
-	}
-	if (heldKeys[controls.jump]) { // W
-	}
-	if (heldKeys[controls.right]) {	// D
-	}
-	if (heldKeys[controls.solOff])
-	{
-		solitaireMode = false;
-	}
-	if (heldKeys[controls.solOn])
-	{
-		solitaireMode = true;
-	}
-	if (heldKeys[controls.devOn]) // K
-	{
-		devMode = true;
-	}
-	if (heldKeys[controls.devOff]) // L
-	{
-		devMode = false;
-	}
-}
-
 
 // Calculate player physics
 function physics() {
@@ -410,7 +385,7 @@ function draw() {
 	offsetX = playerWidth/(blockSize*2);
 	offsetY = playerHeight/(blockSize*2);
 	
-	if (!solitaireMode)
+	if (!traceMode)
 	{
 		resetCanvas(); // TODO: make this faster
 	}
