@@ -27,13 +27,14 @@ var graphicsTickRate = 200;	// Number of times canvas is refreshed per second (m
 var inputTickRate = 100;	// Number of times per second the keyboard inputs are processed (max 1000)
 
 var gravity = 100;			// Downward acceleration
-var maxFallSpeed = 0.07;	// Terminal velocity
+var maxFallSpeed = 0.06;	// Terminal velocity
 var moveSpeed = 0.028;		// Horizontal movement speed of player
 
 var jumpSpeed = 15;
-var jumping = false;
 var jumpTimer = 0;
 var maxJumpTime = 200;
+var jumping = false;
+var canJump = true;
 
 var devMode = true; // Displays stats and shows grid
 var traceMode = false; // Skips resetting the canvas
@@ -185,10 +186,12 @@ document.onkeydown = function(event)
 	
 	switch (event.keyCode)
 	{
-		case controls.devMode: devMode = !devMode;
-		break;
-		case controls.traceMode: traceMode = !traceMode;
-		break;
+		case controls.devMode:
+			devMode = !devMode;
+			break;
+		case controls.traceMode:
+			traceMode = !traceMode;
+			break;
 	}
 }
 // Called when a key is released
@@ -196,6 +199,20 @@ document.onkeyup = function(event)
 {
 	// Unset this key
 	heldKeys[event.keyCode] = false;
+	
+	switch (event.keyCode)
+	{
+		case controls.jump:
+			canJump = true;
+			if (jumping)
+			{
+				// Letting go of the jump key early ends the jump
+				playerYSpeed = 0;
+				jumping = false;
+				jumpTimer = 0;
+			}
+			break;
+	}
 }
 
 // Calculate player physics
@@ -211,21 +228,16 @@ function physics() {
 	}
 	
 	// Jump
-	if (heldKeys[controls.jump] && jumpTimer > 0) // W or Spacebar
+	if (heldKeys[controls.jump] && jumpTimer > 0 && (canJump || jumping)) // W or Spacebar
 	{
 		jumpTimer -= (1000/physicsTickRate);
 		jumping = true;
+		canJump = false;
 		playerYSpeed = -jumpSpeed / physicsTickRate;
 	}
 	else
 	{
 		jumping = false;
-	}
-	
-	if (!(heldKeys[controls.jump] || heldKeys[32]) && !grounded)
-	{
-		jumping = false;
-		jumpTimer = 0;
 	}
 	
 	// Movement
@@ -489,6 +501,11 @@ function draw() {
 		if (power != powers.none) c.fillStyle = "green";
 		else c.fillStyle = "red";
 		c.fillText('Power: '+ power, 10, 170);
+		
+		// Can Jump
+		if (canJump) c.fillStyle = "green";
+		else c.fillStyle = "red";
+		c.fillText('Can Jump: '+ canJump, 10, 190);
 	}
 }
 
