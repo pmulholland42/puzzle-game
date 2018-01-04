@@ -65,6 +65,15 @@ var character;
 
 // Input variables
 var heldKeys = {};		// heldKey[x] is true when the key with that keyCode is being held down
+var controls = {
+	left: 65, // A
+	right: 68, // D
+	jump: 87, // W
+	devOn: 75, // K
+	devOff: 76, // L
+	solOn: 74, // J
+	solOff: 72 // H
+}
 
 // FPS counter
 var now;
@@ -182,7 +191,6 @@ document.onkeyup = function(event)
 {
 	// Unset this key
 	heldKeys[event.keyCode] = false;
-		jumpStart = Date.now();
 }
 
 
@@ -190,27 +198,25 @@ document.onkeyup = function(event)
 function parseKeyboard()
 {
 	// Check the heldKeys array to see what the current input is
-	if (heldKeys[65]) { // A
+	if (heldKeys[controls.left]) { // A
 	}
-	if (heldKeys[87]) { // W
+	if (heldKeys[controls.jump]) { // W
 	}
-	if (heldKeys[68]) {	// D
+	if (heldKeys[controls.right]) {	// D
 	}
-	if (heldKeys[32]) { // Spacebar
-	}
-	if (heldKeys[72])
+	if (heldKeys[controls.solOff])
 	{
 		solitaireMode = false;
 	}
-	if (heldKeys[74])
+	if (heldKeys[controls.solOn])
 	{
 		solitaireMode = true;
 	}
-	if (heldKeys[75]) // K
+	if (heldKeys[controls.devOn]) // K
 	{
 		devMode = true;
 	}
-	if (heldKeys[76]) // L
+	if (heldKeys[controls.devOff]) // L
 	{
 		devMode = false;
 	}
@@ -230,7 +236,7 @@ function physics() {
 	}
 	
 	// Jump
-	if ((heldKeys[87] || heldKeys[32]) && jumpTimer > 0) // W or Spacebar
+	if (heldKeys[controls.jump] && jumpTimer > 0) // W or Spacebar
 	{
 		jumpTimer -= (1000/physicsTickRate);
 		jumping = true;
@@ -241,18 +247,18 @@ function physics() {
 		jumping = false;
 	}
 	
-	if (!(heldKeys[87] || heldKeys[32]) && !grounded)
+	if (!(heldKeys[controls.jump] || heldKeys[32]) && !grounded)
 	{
 		jumping = false;
 		jumpTimer = 0;
 	}
 	
 	// Movement
-	if (heldKeys[65]) // A
+	if (heldKeys[controls.left]) // A
 	{
 		playerXSpeed = -moveSpeed;
 	}
-	else if (heldKeys[68]) // D
+	else if (heldKeys[controls.right]) // D
 	{
 		playerXSpeed = moveSpeed;
 	}
