@@ -22,17 +22,17 @@ var offsetX; // Half of player width
 var offsetY;
 
 // Adjustable values:
-var physicsTickRate = 300;	// Number of times physics is calculated per second (max 1000)
-var graphicsTickRate = 200;	// Number of times canvas is refreshed per second (max 1000)
-var inputTickRate = 100;	// Number of times per second the keyboard inputs are processed (max 1000)
+var physicsTickRate = 400; // Number of times physics is calculated per second (max 1000)
+var graphicsTickRate = 100; // Number of times canvas is refreshed per second (max 1000)
 
-var gravity = 100;			// Downward acceleration
-var maxFallSpeed = 0.06;	// Terminal velocity
-var moveSpeed = 0.028;		// Horizontal movement speed of player
+var gravity = 30; // Downward acceleration (blocks per second^2)
+var maxFallSpeed = 9; // Terminal velocity (blocks per second)
+var moveSpeed = 3.5; // Horizontal movement speed of player (blocks per second)
 
-var jumpSpeed = 15;
-var jumpTimer = 0;
-var maxJumpTime = 200;
+var jumpSpeed = 9; // Vertical speed in blocks per second.
+var jumpHeight = 3; // Height in blocks. The player can jump higher than this though because gravity takes time to slow them.
+var jumpTimer = 0; // Used to track how long the player is jumping.
+var maxJumpTime = jumpHeight/jumpSpeed; // How long the player can go up (seconds) before gravity starts working on them.
 var jumping = false;
 var canJump = true;
 
@@ -74,11 +74,10 @@ var controls = {
 	traceMode: 75 // K
 }
 
-// FPS counter
-var now;
-var then = 0;
-var frameCount = 0;
-var fps = 0;
+// Physics timing
+var now = Date.now();
+var then = now;
+var deltaT;
 
 if (window.innerWidth/gridWidth > window.innerHeight/gridHeight) blockSize = window.innerHeight/gridHeight;
 else blockSize = window.innerWidth/gridWidth;
@@ -125,7 +124,6 @@ function init()
 	draw();
 	setInterval(draw, 1000/graphicsTickRate);
 	setInterval(physics, 1000/physicsTickRate);
-	setInterval(countFrames, 1000);
 }
 
 
@@ -203,10 +201,11 @@ document.onkeyup = function(event)
 	switch (event.keyCode)
 	{
 		case controls.jump:
+			// You can only jump again once you release the jump key and press it again
 			canJump = true;
-			if (jumping)
+			// Letting go of the jump key while going up ends the jump
+			if (playerYSpeed <= 0)
 			{
-				// Letting go of the jump key early ends the jump
 				playerYSpeed = 0;
 				jumping = false;
 				jumpTimer = 0;
@@ -216,11 +215,15 @@ document.onkeyup = function(event)
 }
 
 // Calculate player physics
-function physics() {
+function physics()
+{
+	// Calculate the time since the last physics update
+	now = Date.now();
+	deltaT = (now - then)/1000;
 
 	// Gravity
 	if (!jumping && playerYSpeed <= maxFallSpeed) {
-		playerYSpeed += gravity / (Math.pow(physicsTickRate, 2));
+		playerYSpeed += gravity * deltaT;
 		if (playerYSpeed > maxFallSpeed)
 		{
 			playerYSpeed = maxFallSpeed;
@@ -230,10 +233,10 @@ function physics() {
 	// Jump
 	if (heldKeys[controls.jump] && jumpTimer > 0 && (canJump || jumping)) // W or Spacebar
 	{
-		jumpTimer -= (1000/physicsTickRate);
+		jumpTimer -= deltaT;
 		jumping = true;
 		canJump = false;
-		playerYSpeed = -jumpSpeed / physicsTickRate;
+		playerYSpeed = -jumpSpeed;
 	}
 	else
 	{
@@ -254,16 +257,16 @@ function physics() {
 		playerXSpeed = 0;
 	}
 
-	// Move the player based on their current velocity
+	// Move the player based on their current velocity.
 	playerLastX = playerX;
 	playerLastY = playerY;
-	playerX += playerXSpeed;
-	playerY += playerYSpeed;
+	playerX += playerXSpeed * deltaT;
+	playerY += playerYSpeed * deltaT;
 	
-	// Assume the player is in the air unless the collide with the ground
+	// Assume the player is in the air unless they collide with the ground.
 	grounded = false;
 	
-	// Detect collision for each corner of the player's collision box
+	// Detect collision for each corner of the player's collision box.
 	for (var corner = 0; corner < 4; corner++)
 	{
 		// The offset and adjust values change depending on which corner of the player's hitbox is colliding.
@@ -376,12 +379,15 @@ function physics() {
 			}
 		}
 	}
+	
+	// Reset the physics timer
+	then = now;
 }
 
 
 // Render the canvas - called every 20 ms
-function draw() {
-	
+function draw()
+{
 	if (window.innerWidth/gridWidth > window.innerHeight/gridHeight) 
 	{
 		// Screen is too wide, base the grid off screen height
@@ -497,24 +503,16 @@ function draw() {
 		else c.fillStyle = "red";
 		c.fillText('Jumping: '+ jumping, 10, 150);
 		
-		// Power-up
-		if (power != powers.none) c.fillStyle = "green";
-		else c.fillStyle = "red";
-		c.fillText('Power: '+ power, 10, 170);
-		
 		// Can Jump
 		if (canJump) c.fillStyle = "green";
 		else c.fillStyle = "red";
-		c.fillText('Can Jump: '+ canJump, 10, 190);
+		c.fillText('Can Jump: '+ canJump, 10, 170);
+		
+		// Power-up
+		if (power != powers.none) c.fillStyle = "green";
+		else c.fillStyle = "red";
+		c.fillText('Power: '+ power, 10, 190);
 	}
-}
-
-function countFrames()
-{
-	now = Date.now();
-	fps = Math.floor(frameCount/((now-then)/1000));
-	then = now; // whoa, dude
-	frameCount = 0;
 }
 
 // TODO: replace these helper functions with a class based system for block types
