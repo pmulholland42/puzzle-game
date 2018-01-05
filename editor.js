@@ -468,7 +468,10 @@ function draw()
 
 	// Draw the floor
 	c.fillStyle = "rgba(80, 80, 80, 1)";
-	c.fillRect(0, blockSize * gridHeight, window.innerWidth, window.innerWidth - blockSize * gridHeight);
+	c.fillRect(0, blockSize * gridHeight, window.innerWidth, window.innerHeight - blockSize * gridHeight);
+	
+	// Draw the right wall
+	c.fillRect(blockSize * gridWidth, 0, window.innerWidth - blockSize * gridWidth, window.innerHeight);
 	
 	// Draw the player
 	c.fillStyle = "rgba(80, 80, 200, 1)";
