@@ -22,8 +22,8 @@ var offsetX; // Half of player width
 var offsetY;
 
 // Adjustable values:
-var physicsTickRate = 400; // Number of times physics is calculated per second (max 1000)
-var graphicsTickRate = 100; // Number of times canvas is refreshed per second (max 1000)
+var physicsTickRate = 500; // Number of times physics is calculated per second (max 1000)
+var graphicsTickRate = 200; // Number of times canvas is refreshed per second (max 1000)
 
 var gravity = 30; // Downward acceleration (blocks per second^2)
 var maxFallSpeed = 9; // Terminal velocity (blocks per second)
@@ -152,7 +152,6 @@ function setupCanvas()
 
 function resetCanvas (e)
 {
-	//console.log("Resetting canvas...");
  	// Resize the canvas - but remember - this clears the canvas too
   	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
@@ -231,7 +230,7 @@ function physics()
 	}
 	
 	// Jump
-	if (heldKeys[controls.jump] && jumpTimer > 0 && (canJump || jumping)) // W or Spacebar
+	if (heldKeys[controls.jump] && jumpTimer > 0 && ((canJump && grounded) || jumping)) // W or Spacebar
 	{
 		jumpTimer -= deltaT;
 		jumping = true;
@@ -356,6 +355,8 @@ function physics()
 			{
 				playerY = -offsetY;
 				playerYSpeed = 0;
+				jumping = false;
+				jumpTimer = 0;
 			}
 			// Ground collision detection
 			else if (playerY + offsetY > gridHeight)
