@@ -142,14 +142,17 @@ function setupCanvas()
 	container.appendChild(canvas);
 	// Put the container on the page
 	document.body.appendChild(container);
+	
+	// Set up click listender on the canvas
+	canvas.addEventListener('click', editBlock, false);
 }
 
-// Called when mouse is held down
-document.onmousedown = function(event)
+// Changes block type when clicked on
+function editBlock(event)
 {
-	// Get the block they clicked in
-	var xBlock = Math.floor(event.clientX / blockSize);
-	var yBlock = Math.floor(event.clientY / blockSize);
+	var xBlock = Math.floor((event.pageX - canvas.offsetLeft) / blockSize);
+	var yBlock = Math.floor((event.pageY - canvas.offsetTop) / blockSize);
+	
 	if (xBlock < 32 && yBlock < 16)
 	{
 		grid[xBlock][yBlock] = (grid[xBlock][yBlock] + 1) % numBlockTypes;
@@ -159,6 +162,7 @@ document.onmousedown = function(event)
 		console.log("Clicked outside grid");
 	}
 }
+
 // Called when a key is held down
 document.onkeydown = function(event)
 {
