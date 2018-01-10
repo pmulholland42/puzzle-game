@@ -134,7 +134,7 @@ function setupCanvas()
 	canvas.width = window.innerWidth;				
 	canvas.height = window.innerHeight;
 	
-	// Hide scroll bars - stackoverflow.com/questions/26745292
+	// Hide scroll bars
 	document.body.style.overflow = 'hidden';
 	
 	// Get a CanvasRenderingContext2D on the canvas
@@ -153,17 +153,19 @@ function setupCanvas()
 function resetCanvas (e)
 {
  	// Resize the canvas - but remember - this clears the canvas too
-  	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
+  	canvas.width = width;
+	canvas.height = height;
 	
 	// Scroll to the top left.
 	window.scrollTo(0,0);
+	
+	console.log("reset canvas");
 }
 
 // Called when mouse is held down
 document.onmousedown = function(event)
 {
-	// Set this key as being held
+	// Get the block they clicked in
 	var xBlock = Math.floor(event.clientX / blockSize);
 	var yBlock = Math.floor(event.clientY / blockSize);
 	if (xBlock < 32 && yBlock < 16)
@@ -212,6 +214,8 @@ document.onkeyup = function(event)
 			break;
 	}
 }
+
+window.addEventListener("resize", resetCanvas);
 
 // Calculate player physics
 function physics()
@@ -393,11 +397,13 @@ function draw()
 	{
 		// Screen is too wide, base the grid off screen height
 		blockSize = window.innerHeight/gridHeight;
+		width = blockSize * gridWidth;
 	}
 	else
 	{
 		// Screen is not wide enough, base the grid off screen width
 		blockSize = window.innerWidth/gridWidth;
+		height = blockSize * gridHeight;
 	}
 	playerWidth = blockSize*0.4635; // Golden ratio
 	playerHeight = blockSize*0.75;
@@ -406,8 +412,12 @@ function draw()
 	
 	if (!traceMode)
 	{
-		resetCanvas(); // TODO: make this faster
+		//resetCanvas(); // TODO: make this faster
 	}
+	
+	// Draw the background
+	c.fillStyle = "rgba(255, 255, 255, 1)";
+	c.fillRect(0, 0, width, height);
 	
 	// Draw the blocks
 	var red = 0;
@@ -449,19 +459,19 @@ function draw()
 	// Draw grid lines
 	if (devMode)
 	{
-		c.strokeStyle = "rgba(150, 150, 150, .3)";
+		c.strokeStyle = "rgba(255, 150, 150, .3)";
 		for (var x = 0; x <= gridWidth; x++)
 		{
 			c.beginPath();
 			c.moveTo(x * blockSize, 0);
-			c.lineTo(x * blockSize, blockSize * gridHeight);
+			c.lineTo(x * blockSize, height);
 			c.stroke();
 		}
 		for (var y = 0; y <= gridHeight; y++)
 		{
 			c.beginPath();
 			c.moveTo(0, y * blockSize);
-			c.lineTo(blockSize * gridWidth, blockSize * y);
+			c.lineTo(width, blockSize * y);
 			c.stroke();
 		}
 	}
@@ -516,6 +526,17 @@ function draw()
 		if (power != powers.none) c.fillStyle = "green";
 		else c.fillStyle = "red";
 		c.fillText('Power: '+ power, 10, 190);
+		
+		// Width
+		c.fillText('Width: '+ width, 10, 210);
+		c.fillText(window.innerWidth, 10, 230);
+		
+		// Height
+		c.fillText('Height: ' + height, 10, 250);
+		c.fillText(window.innerHeight, 10, 270);
+		
+		c.fillText(width/height, 10, 290);
+
 	}
 }
 
