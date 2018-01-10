@@ -435,7 +435,7 @@ function draw()
 	// Draw grid lines
 	if (devMode)
 	{
-		c.strokeStyle = "rgba(255, 150, 150, .3)";
+		c.strokeStyle = "rgba(150, 150, 150, .3)";
 		for (var x = 0; x <= gridWidth; x++)
 		{
 			c.beginPath();
@@ -463,32 +463,46 @@ function draw()
 		c.fillStyle = "rgba(255, 80, 80, 1)";
 		c.fillRect(playerX*blockSize-2, playerY*blockSize-2, 4, 4);
 		
-		// Display stats
+		// Debug stats:
 		// X position and speed
-		if (playerXSpeed > 0) c.fillStyle = "green";
-		else c.fillStyle = "red";
+		if (playerXSpeed > 0)
+			c.fillStyle = "green";
+		else if (playerXSpeed < 0)
+			c.fillStyle = "red";
+		else
+			c.fillStyle = "black";
 		c.fillText('X velocity: ' + playerXSpeed, 10, 40);
 		c.fillText('X position: ' + playerX, 10, 60);
 		
 		// Y position and speed
-		if (playerYSpeed > 0) c.fillStyle = "green";
-		else c.fillStyle = "red";
+		if (playerYSpeed < 0)
+			c.fillStyle = "green";
+		else if (playerYSpeed > 0)
+			c.fillStyle = "red";
+		else
+			c.fillStyle = "black";
 		c.fillText('Y velocity: ' + playerYSpeed, 10, 80);
 		c.fillText('Y position: ' + playerY, 10, 100);
 		
 		// Grounded
-		if (grounded) c.fillStyle = "green";
-		else c.fillStyle = "red";
+		if (grounded)
+			c.fillStyle = "green";
+		else
+			c.fillStyle = "red";
 		c.fillText('Grounded: ' + grounded, 10, 130);
 		
 		// Jumping
-		if (jumping) c.fillStyle = "green";
-		else c.fillStyle = "red";
+		if (jumping)
+			c.fillStyle = "green";
+		else
+			c.fillStyle = "red";
 		c.fillText('Jumping: '+ jumping, 10, 150);
 		
 		// Can Jump
-		if (canJump) c.fillStyle = "green";
-		else c.fillStyle = "red";
+		if (canJump)
+			c.fillStyle = "green";
+		else
+			c.fillStyle = "red";
 		c.fillText('Can Jump: '+ canJump, 10, 170);
 		
 		// Power-up
@@ -496,13 +510,12 @@ function draw()
 		else c.fillStyle = "red";
 		c.fillText('Power: '+ power, 10, 190);
 		
-		// Width
-		c.fillText('Width: '+ canvas.width, 10, 210);
-		c.fillText(window.innerWidth, 10, 230);
-		
-		// Height
-		c.fillText('Height: ' + canvas.height, 10, 250);
-		c.fillText(window.innerHeight, 10, 270);
+		// Screen size
+		c.fillStyle = "black";
+		c.fillText('Canvas width: '+ canvas.width, 10, 230);
+		c.fillText('Window width: ' + window.innerWidth, 10, 250);
+		c.fillText('Canvas height: ' + canvas.height, 10, 270);
+		c.fillText('Window height: ' + window.innerHeight, 10, 290);
 
 	}
 }
