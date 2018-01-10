@@ -2,8 +2,6 @@
 var canvas; 			// <canvas> HTML tag
 var c;					// Canvas rendering context
 var container;			// <div> HTML tag
-var width = window.innerWidth;
-var height = window.innerHeight;
 
 // Player physics variables:
 var playerX; // Player position
@@ -23,7 +21,7 @@ var offsetY;
 
 // Adjustable values:
 var physicsTickRate = 500; // Number of times physics is calculated per second (max 1000)
-var graphicsTickRate = 200; // Number of times canvas is refreshed per second (max 1000)
+var graphicsTickRate = 250; // Number of times canvas is refreshed per second (max 1000)
 
 var gravity = 30; // Downward acceleration (blocks per second^2)
 var maxFallSpeed = 9; // Terminal velocity (blocks per second)
@@ -37,7 +35,6 @@ var jumping = false;
 var canJump = true;
 
 var devMode = true; // Displays stats and shows grid
-var traceMode = false; // Skips resetting the canvas
 
 // Level data
 var gridWidth = 32;
@@ -70,8 +67,7 @@ var controls = {
 	left: 65, // A
 	right: 68, // D
 	jump: 87, // W
-	devMode: 76, // L
-	traceMode: 75 // K
+	devMode: 76 // L
 }
 
 // Physics timing
@@ -130,36 +126,22 @@ function init()
 function setupCanvas()
 {
 	// Create a <canvas> HTML tag
-    canvas = document.createElement( 'canvas' );
-	canvas.width = window.innerWidth;				
-	canvas.height = window.innerHeight;
+    canvas = document.createElement('canvas');
 	
 	// Hide scroll bars
 	document.body.style.overflow = 'hidden';
 	
 	// Get a CanvasRenderingContext2D on the canvas
-	c = canvas.getContext( '2d' );
+	c = canvas.getContext('2d');
 	
 	// Create a <div> HTML tag called container
-	container = document.createElement( 'div' );
+	container = document.createElement('div');
 	container.className = "container";
 	
 	// Put the canvas in the container
 	container.appendChild(canvas);
 	// Put the container on the page
-	document.body.appendChild( container );
-}
-
-function resetCanvas (e)
-{
- 	// Resize the canvas - but remember - this clears the canvas too
-  	canvas.width = width;
-	canvas.height = height;
-	
-	// Scroll to the top left.
-	window.scrollTo(0,0);
-	
-	console.log("reset canvas");
+	document.body.appendChild(container);
 }
 
 // Called when mouse is held down
@@ -188,9 +170,6 @@ document.onkeydown = function(event)
 		case controls.devMode:
 			devMode = !devMode;
 			break;
-		case controls.traceMode:
-			traceMode = !traceMode;
-			break;
 	}
 }
 // Called when a key is released
@@ -214,8 +193,6 @@ document.onkeyup = function(event)
 			break;
 	}
 }
-
-window.addEventListener("resize", resetCanvas);
 
 // Calculate player physics
 function physics()
@@ -396,28 +373,27 @@ function draw()
 	if (window.innerWidth/gridWidth > window.innerHeight/gridHeight) 
 	{
 		// Screen is too wide, base the grid off screen height
+		// Should see walls
 		blockSize = window.innerHeight/gridHeight;
-		width = blockSize * gridWidth;
 	}
 	else
 	{
 		// Screen is not wide enough, base the grid off screen width
+		// Should see floor
 		blockSize = window.innerWidth/gridWidth;
-		height = blockSize * gridHeight;
 	}
+	
+	canvas.width = blockSize * gridWidth;
+	canvas.height = blockSize * gridHeight;
+	
 	playerWidth = blockSize*0.4635; // Golden ratio
 	playerHeight = blockSize*0.75;
 	offsetX = playerWidth/(blockSize*2);
 	offsetY = playerHeight/(blockSize*2);
 	
-	if (!traceMode)
-	{
-		//resetCanvas(); // TODO: make this faster
-	}
-	
 	// Draw the background
 	c.fillStyle = "rgba(255, 255, 255, 1)";
-	c.fillRect(0, 0, width, height);
+	c.fillRect(0, 0, canvas.width, canvas.height);
 	
 	// Draw the blocks
 	var red = 0;
@@ -464,24 +440,17 @@ function draw()
 		{
 			c.beginPath();
 			c.moveTo(x * blockSize, 0);
-			c.lineTo(x * blockSize, height);
+			c.lineTo(x * blockSize, canvas.height);
 			c.stroke();
 		}
-		for (var y = 0; y <= gridHeight; y++)
+		for (var y = 0; y < gridHeight; y++)
 		{
 			c.beginPath();
 			c.moveTo(0, y * blockSize);
-			c.lineTo(width, blockSize * y);
+			c.lineTo(canvas.width, blockSize * y);
 			c.stroke();
 		}
 	}
-
-	// Draw the floor
-	c.fillStyle = "rgba(80, 80, 80, 1)";
-	c.fillRect(0, blockSize * gridHeight, window.innerWidth, window.innerHeight - blockSize * gridHeight);
-	
-	// Draw the right wall
-	c.fillRect(blockSize * gridWidth, 0, window.innerWidth - blockSize * gridWidth, window.innerHeight);
 	
 	// Draw the player
 	c.fillStyle = "rgba(80, 80, 200, 1)";
@@ -528,14 +497,12 @@ function draw()
 		c.fillText('Power: '+ power, 10, 190);
 		
 		// Width
-		c.fillText('Width: '+ width, 10, 210);
+		c.fillText('Width: '+ canvas.width, 10, 210);
 		c.fillText(window.innerWidth, 10, 230);
 		
 		// Height
-		c.fillText('Height: ' + height, 10, 250);
+		c.fillText('Height: ' + canvas.height, 10, 250);
 		c.fillText(window.innerHeight, 10, 270);
-		
-		c.fillText(width/height, 10, 290);
 
 	}
 }
